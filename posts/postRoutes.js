@@ -13,7 +13,7 @@ router.post("/", (req, res) => {
 
   if (missingProperties.length > 0) {
     res.status(400).json({
-      errorMessage: "Please provide the " + missingString + " for the post",
+      errorMessage: "Please provide the " + missingProperties + " for the post",
     });
   }
 
