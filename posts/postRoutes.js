@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   find,
+  findIds,
   findById,
   insert,
   update,
@@ -12,7 +13,7 @@ const {
 } = require("./../data/db");
 
 // Helpers
-const { validateProperties } = require("./../utils/utils");
+const { validateProperties, validateId } = require("./../utils/utils");
 
 // Endpoints
 
@@ -37,9 +38,10 @@ router.post("/", (req, res) => {
 
 // POST	/api/posts/:id/comments	Creates a comment for the post with the specified id using information sent inside of the request body.
 router.post("/:id/comments", (req, res) => {
-  // Check for missing fields
-  const required = ["text"];
+  // Check for missing fields and invalid ids
+  const required = ["text", "post_id"];
   validateProperties(req, res, required);
+  validateId(req, res);
 
   // Update the post comment
   insertComment(req.body)

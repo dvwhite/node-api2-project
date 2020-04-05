@@ -1,3 +1,5 @@
+const { findIds } = require('./../data/db');
+
 /**
  * @function formatFieldsString: Create a string using the fields in an array
  * @param {*} fields: An array of fields
@@ -52,4 +54,28 @@ const validateProperties = (req, res, required) => {
   }
 }
 
-module.exports = { validateProperties };
+const validateId = (req, res) => {
+  // Validate ids match
+  if (req.body.post_id && (Number(req.params.id) !== Number(req.body.post_id))) {
+    res
+      .status(404)
+      .json({
+        message: `The post id of ${req.body.post_id} doesn't match the params id of ${req.params.id}`,
+      });
+    return;
+  }
+
+  // Validate that id exists
+  // Get all ids from the db and make sure that req.params.id exists
+  findIds()
+    .then((dbRes) => {
+      const ids = dbRes.map(post => post.id);
+      if (!ids.includes(Number(req.params.id))) {
+        res.status(404).json({ message: "The post with the specified ID does not exist." });
+        return;
+      }
+    })
+    .catch((err) => console.log(err));
+}
+
+module.exports = { validateProperties, validateId };
