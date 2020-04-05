@@ -1,4 +1,4 @@
-const { findIds } = require('./../data/db');
+const { findId } = require('./../data/db');
 
 /**
  * @function formatFieldsString: Create a string using the fields in an array
