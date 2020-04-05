@@ -3,32 +3,47 @@ const router = express.Router();
 const db = require("./../data/db");
 
 // Helpers
-const { getMissingFields } = require("./../utils/utils");
+const { validateProperties } = require("./../utils/utils");
+
+// Endpoints
 
 // POST	/api/posts	Creates a post using the information sent inside the request body.
 router.post("/", (req, res) => {
-  const actual = Object.keys(req.body);
+  // Check for missing fields
   const required = ["title", "contents"];
-  const missingProperties = getMissingFields(required, actual);
+  validateProperties(req, res, required);
 
-  if (missingProperties.length > 0) {
-    res.status(400).json({
-      errorMessage: "Please provide the " + missingProperties + " for the post",
+  // Update the database
+  db.insert(req.body)
+    .then((dbRes) => {
+      res.status(201).json(dbRes);
+    })
+    .catch((err) => {
+      res.status(500).json({
+        error: "There was an error while saving the post to the database",
+        response: err,
+      });
     });
-  }
-
-  // // Commented out - returns an empty object
-  // const id = db.insert(req.body)
-  // res.status(200).json(id)
-
-  // This works despite API documentation indicating
-  // that it returns an object instead of a promise
-  db.insert(req.body).then(dbRes => {
-    res.status(200).json(dbRes);
-  });
 });
 
 // POST	/api/posts/:id/comments	Creates a comment for the post with the specified id using information sent inside of the request body.
+router.post('/:id/comments', (req, res) => {
+  // Check for missing fields
+  const required = ["text"];
+  validateProperties(req, res, required);
+
+  // Update the post comment
+  db.insertComment(req.body)
+    .then(dbRes => {
+      res.status(201).json(req.body);
+    })
+    .catch((err) => {
+      res.status(500).json({
+        error: "There was an error while saving the comment to the database",
+        response: err,
+      });
+    });
+});
 
 // GET	/api/posts	Returns an array of all the post objects contained in the database.
 router.get("/", (req, res) => {
@@ -36,7 +51,12 @@ router.get("/", (req, res) => {
     .then((posts) => {
       res.status(200).json(posts);
     })
-    .catch((err) => console.error(err.response));
+    .catch((err) => {
+      res.status(500).json({
+        error: "There was an error while saving the post to the database",
+        response: err,
+      });
+    });
 });
 
 // GET	/api/posts/:id	Returns the post object with the specified id.
