@@ -5,6 +5,7 @@ const db = knex(knexConfig.development);
 module.exports = {
   find,
   findIds,
+  findId,
   findById,
   insert,
   update,
@@ -21,6 +22,12 @@ function find() {
 function findIds() {
   return db('posts')
     .select('id');
+}
+
+function findId(id) {
+  return db('posts')
+    .where('id', Number(id))
+    .first() || null;
 }
 
 function findById(id) {
