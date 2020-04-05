@@ -50,7 +50,6 @@ router.post("/:id/comments", async (req, res) => {
   // Validate the id
   // This validates that req.body.post_id matches req.params.id
   const isValidId = await validateId(req, res);
-  console.log("isValidId:", isValidId)
   if (!isValidId) {
     return;
   }
@@ -83,9 +82,10 @@ router.get("/", (req, res) => {
 });
 
 // GET	/api/posts/:id	Returns the post object with the specified id.
-router.get("/:id", (req, res) => {
-  // Check for invalid id
-  const isValidId = validateId(req, res);
+router.get("/:id", async (req, res) => {
+  // Validate the id
+  // This validates that req.body.post_id matches req.params.id
+  const isValidId = await validateId(req, res);
   if (!isValidId) {
     return;
   }
