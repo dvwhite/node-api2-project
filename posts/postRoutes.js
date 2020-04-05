@@ -71,6 +71,20 @@ router.get("/", (req, res) => {
 });
 
 // GET	/api/posts/:id	Returns the post object with the specified id.
+router.get("/:id", (req, res) => {
+  // Check for invalid ids
+  validateId(req, res);
+
+  findById(req.params.id)
+    .then((dbRes) => {
+      res.status(200).json(dbRes);
+    })
+    .catch((err) => {
+      res
+        .status(500)
+        .json({ error: "The post information could not be retrieved." });
+    });
+});
 
 // GET	/api/posts/:id/comments	Returns an array of all the comment objects associated with the post with the specified id.
 
