@@ -1,6 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const db = require("./../data/db");
+const {
+  find,
+  findById,
+  insert,
+  update,
+  remove,
+  findPostComments,
+  findCommentById,
+  insertComment,
+} = require("./../data/db");
 
 // Helpers
 const { validateProperties } = require("./../utils/utils");
@@ -14,7 +23,7 @@ router.post("/", (req, res) => {
   validateProperties(req, res, required);
 
   // Update the database
-  db.insert(req.body)
+  insert(req.body)
     .then((dbRes) => {
       res.status(201).json(dbRes);
     })
@@ -27,14 +36,14 @@ router.post("/", (req, res) => {
 });
 
 // POST	/api/posts/:id/comments	Creates a comment for the post with the specified id using information sent inside of the request body.
-router.post('/:id/comments', (req, res) => {
+router.post("/:id/comments", (req, res) => {
   // Check for missing fields
   const required = ["text"];
   validateProperties(req, res, required);
 
   // Update the post comment
-  db.insertComment(req.body)
-    .then(dbRes => {
+  insertComment(req.body)
+    .then((dbRes) => {
       res.status(201).json(req.body);
     })
     .catch((err) => {
@@ -47,7 +56,7 @@ router.post('/:id/comments', (req, res) => {
 
 // GET	/api/posts	Returns an array of all the post objects contained in the database.
 router.get("/", (req, res) => {
-  db.find()
+  find()
     .then((posts) => {
       res.status(200).json(posts);
     })
