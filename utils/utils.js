@@ -39,4 +39,17 @@ const getMissingFields = (expectedFields, actualFields) => {
   return formatFieldString(fieldsNotFound);
 }
 
-module.exports = { getMissingFields };
+const validateProperties = (req, res, required) => {
+  // Check for missing fields
+  const actual = Object.keys(req.body);
+  const missingProperties = getMissingFields(required, actual);
+  // Return an error message if any are missing
+  if (missingProperties.length > 0) {
+    res.status(400).json({
+      errorMessage: "Please provide the " + missingProperties + " for the post",
+    });
+    return;
+  }
+}
+
+module.exports = { validateProperties };
