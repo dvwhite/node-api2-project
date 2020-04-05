@@ -46,15 +46,16 @@ const validateProperties = (req, res, required) => {
   const actual = Object.keys(req.body);
   const missingProperties = getMissingFields(required, actual);
   // Return an error message if any are missing
-  if (missingProperties.length > 0) {
+  if (missingProperties.length) {
     res.status(400).json({
       errorMessage: "Please provide the " + missingProperties + " for the post",
     });
-    return;
+    return false; // doesn't validate
   }
+  return true; // does validate
 }
 
-const validateId = (req, res) => {
+const validateIdsMatch = (req, res) => {
   // Validate ids match
   if (req.body.post_id && (Number(req.params.id) !== Number(req.body.post_id))) {
     res
@@ -62,20 +63,42 @@ const validateId = (req, res) => {
       .json({
         message: `The post id of ${req.body.post_id} doesn't match the params id of ${req.params.id}`,
       });
-    return;
+    return false; // doesn't validate
   }
+  return true; // does validate
+}
 
+const validateIdExists = async (req, res) => {
   // Validate that id exists
   // Get all ids from the db and make sure that req.params.id exists
-  findIds()
-    .then((dbRes) => {
-      const ids = dbRes.map(post => post.id);
-      if (!ids.includes(Number(req.params.id))) {
-        res.status(404).json({ message: "The post with the specified ID does not exist." });
-        return;
-      }
-    })
-    .catch((err) => console.log(err));
+  try {
+    const dbRes = await findId(+req.params.id);
+    if (!dbRes) {
+      res.status(404).json({ message: "The post with the specified ID does not exist." });
+      return false;
+    }
+    return true;
+  }
+  catch (err) {
+    console.log(err)
+  }
+}
+
+const validateId = async (req, res) => {
+  // Bubble up return statements to caller to force
+  // node to exit on error
+
+  // Validate that req.body.post_id matches req.params.id
+  const isMatchingId = validateIdsMatch(req, res);
+
+  // Validate that req.params.id exists on the db tables
+  try {
+    const idExists = await validateIdExists(req, res);
+    return (isMatchingId && idExists);
+  }
+  catch (err) {
+    return err;
+  }
 }
 
 module.exports = { validateProperties, validateId };
