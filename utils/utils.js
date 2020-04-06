@@ -55,13 +55,13 @@ const validateProperties = (req, res, required) => {
   return true; // does validate
 }
 
-const validateIdsMatch = (req, res) => {
+const validateIdsMatch = (req, res, idPropName) => {
   // Validate ids match
-  if (req.body.post_id && (Number(req.params.id) !== Number(req.body.post_id))) {
+  if (req.body[idPropName] && (Number(req.params.id) !== Number(req.body[idPropName]))) {
     res
       .status(404)
       .json({
-        message: `The post id of ${req.body.post_id} doesn't match the params id of ${req.params.id}`,
+        message: `The ${idPropName} of ${req.body[idPropName]} doesn't match the params id of ${req.params.id}`,
       });
     return false; // doesn't validate
   }
@@ -84,12 +84,12 @@ const validateIdExists = async (req, res) => {
   }
 }
 
-const validateId = async (req, res) => {
+const validateId = async (req, res, idPropName) => {
   // Bubble up return statements to caller to force
   // node to exit on error
 
   // Validate that req.body.post_id matches req.params.id
-  const isMatchingId = validateIdsMatch(req, res);
+  const isMatchingId = validateIdsMatch(req, res, idPropName);
 
   // Validate that req.params.id exists on the db tables
   try {

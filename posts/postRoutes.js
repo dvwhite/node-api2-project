@@ -51,7 +51,7 @@ router.post("/:id/comments", async (req, res) => {
 
   // Validate the id
   // This validates that req.body.post_id matches req.params.id
-  const isValidId = await validateId(req, res);
+  const isValidId = await validateId(req, res, "post_id");
   if (!isValidId) {
     return;
   }
@@ -89,7 +89,7 @@ router.get("/", (req, res) => {
 router.get("/:id", async (req, res) => {
   // Validate the id
   // This validates that req.body.post_id matches req.params.id
-  const isValidId = await validateId(req, res);
+  const isValidId = await validateId(req, res, "id");
   if (!isValidId) {
     return;
   }
@@ -111,7 +111,7 @@ router.get("/:id", async (req, res) => {
 router.get("/:id/comments", async (req, res) => {
   // Validate the id
   // This validates that req.body.post_id matches req.params.id
-  const isValidId = await validateId(req, res);
+  const isValidId = await validateId(req, res, "id");
   if (!isValidId) {
     return;
   }
@@ -136,8 +136,8 @@ router.get("/:id/comments", async (req, res) => {
 /// You may need to make additional calls to the database in order to satisfy this requirement.
 router.delete("/:id", async (req, res) => {
   // Validate the id
-  // This validates that req.body.post_id matches req.params.id
-  const isValidId = await validateId(req, res);
+  // This validates that req.body[id] matches req.params.id
+  const isValidId = await validateId(req, res, "id");
   if (!isValidId) {
     return;
   } else {
@@ -150,26 +150,44 @@ router.delete("/:id", async (req, res) => {
       }  
     } catch(err) {
       res.status(500).json({
-        error: "The comments information could not be retrieved.",
+        error: "The post could not be removed.",
         response: err,
       });
     }
   }
-
-  // Remove the post
-  // try {
-
-  // } 
-  // catch (err) {
-  //   res.status(500).json({
-  //     error: "The post could not be removed",
-  //     response: err,
-  //   });
-  //   return;
-  // }
 });
 
 // PUT	/api/posts/:id	Updates the post with the specified id using data from the request body.
 // Returns the modified document, NOT the original.
+router.put('/:id', async (req, res) => {
+  // Check for missing fields
+  const required = ["title", "contents"];
+  const isValidProps = validateProperties(req, res, required);
+  if (!isValidProps) {
+    return;
+  }
+
+  // Validate the id
+  // This validates that req.body.post_id matches req.params.id
+  const isValidId = await validateId(req, res, "id");
+  if (!isValidId) {
+    return;
+  } else {
+    try {
+      // Update the post
+      const post = await update(Number(req.params.id), req.body);
+      console.log("post:", post)
+      // Get the updated post
+      const editedPost = await findId(Number(req.params.id));
+      console.log("edited:", editedPost);
+      res.status(200).json(editedPost);
+    } catch(err) {
+      res.status(500).json({
+        error: "The post information could not be modified.",
+        response: err,
+      });
+    }
+  }
+})
 
 module.exports = router;
