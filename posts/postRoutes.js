@@ -176,10 +176,8 @@ router.put('/:id', async (req, res) => {
     try {
       // Update the post
       const post = await update(Number(req.params.id), req.body);
-      console.log("post:", post)
       // Get the updated post
       const editedPost = await findId(Number(req.params.id));
-      console.log("edited:", editedPost);
       res.status(200).json(editedPost);
     } catch(err) {
       res.status(500).json({
