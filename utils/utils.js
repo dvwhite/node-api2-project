@@ -15,7 +15,7 @@ const formatFieldString = fields => {
     // Plural, e.g., "Missing a and b" or "Missing a, b, and c"
   } else {
     fields[fields.length - 1] = 'and ' + fields[fields.length - 1];
-    // Separate with a space if two items, or a comma with > 3
+    // Separate with a space if two items, or a comma with >= 3
     if (fields.length === 2) {
       return fields.join(' ');
     } else {

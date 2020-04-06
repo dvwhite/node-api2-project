@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   find,
+  findId,
   findById,
   insert,
   update,
@@ -16,7 +17,8 @@ const { validateProperties, validateId } = require("./../utils/utils");
 
 // Endpoints
 
-// POST	/api/posts	Creates a post using the information sent inside the request body.
+// POST	/api/post
+// Creates a post using the information sent inside the request body.
 router.post("/", async (req, res) => {
   // Check for missing fields
   const required = ["title", "contents"];
@@ -29,8 +31,7 @@ router.post("/", async (req, res) => {
   try {
     const dbRes = await insert(req.body);
     res.status(201).json(dbRes);
-  }
-  catch(err) {
+  } catch (err) {
     res.status(500).json({
       error: "There was an error while saving the post to the database",
       response: err,
@@ -38,7 +39,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-// POST	/api/posts/:id/comments	Creates a comment for the post with the specified id using information sent inside of the request body.
+// POST	/api/posts/:id/comments
+// Creates a comment for the post with the specified id using information sent inside of the request body.
 router.post("/:id/comments", async (req, res) => {
   // Check for missing fields
   const required = ["text", "post_id"];
@@ -67,7 +69,8 @@ router.post("/:id/comments", async (req, res) => {
     });
 });
 
-// GET	/api/posts	Returns an array of all the post objects contained in the database.
+// GET	/api/posts
+// Returns an array of all the post objects contained in the database.
 router.get("/", (req, res) => {
   find()
     .then((posts) => {
@@ -81,7 +84,8 @@ router.get("/", (req, res) => {
     });
 });
 
-// GET	/api/posts/:id	Returns the post object with the specified id.
+// GET	/api/posts/:id
+// Returns the post object with the specified id.
 router.get("/:id", async (req, res) => {
   // Validate the id
   // This validates that req.body.post_id matches req.params.id
@@ -95,17 +99,77 @@ router.get("/:id", async (req, res) => {
       res.status(200).json(dbRes);
     })
     .catch((err) => {
-      res
-        .status(500)
-        .json({ error: "The post information could not be retrieved." });
+      res.status(500).json({
+        error: "The post information could not be retrieved.",
+        response: err,
+      });
     });
 });
 
-// GET	/api/posts/:id/comments	Returns an array of all the comment objects associated with the post with the specified id.
+// GET	/api/posts/:id/comments
+// Returns an array of all the comment objects associated with the post with the specified id.
+router.get("/:id/comments", async (req, res) => {
+  // Validate the id
+  // This validates that req.body.post_id matches req.params.id
+  const isValidId = await validateId(req, res);
+  if (!isValidId) {
+    return;
+  }
 
+  try {
+    findPostComments(req.params.id)
+      .then((dbRes) => {
+        res.status(200).json(dbRes);
+      })
+      .catch((err) => err);
+  } catch (err) {
+    res.status(500).json({
+      error: "The comments information could not be retrieved.",
+      response: err,
+    });
+    return;
+  }
+});
 
-// DELETE	/api/posts/:id	Removes the post with the specified id and returns the deleted post object. You may need to make additional calls to the database in order to satisfy this requirement.
+// DELETE	/api/posts/:id
+// Removes the post with the specified id and returns the deleted post object. 
+/// You may need to make additional calls to the database in order to satisfy this requirement.
+router.delete("/:id", async (req, res) => {
+  // Validate the id
+  // This validates that req.body.post_id matches req.params.id
+  const isValidId = await validateId(req, res);
+  if (!isValidId) {
+    return;
+  } else {
+    // Grab the post before removal so it can be returned
+    try {
+      const postToDel = await findId(+req.params.id)
+      const dbRes = await remove(+req.params.id);
+      if (Number(dbRes) === Number(1)) {
+        res.status(200).json(postToDel);
+      }  
+    } catch(err) {
+      res.status(500).json({
+        error: "The comments information could not be retrieved.",
+        response: err,
+      });
+    }
+  }
 
-// PUT	/api/posts/:id	Updates the post with the specified id using data from the request body. Returns the modified document, NOT the original.
+  // Remove the post
+  // try {
+
+  // } 
+  // catch (err) {
+  //   res.status(500).json({
+  //     error: "The post could not be removed",
+  //     response: err,
+  //   });
+  //   return;
+  // }
+});
+
+// PUT	/api/posts/:id	Updates the post with the specified id using data from the request body.
+// Returns the modified document, NOT the original.
 
 module.exports = router;
