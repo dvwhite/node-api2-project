@@ -33,8 +33,7 @@ router.post("/", async (req, res) => {
     res.status(201).json(dbRes);
   } catch (err) {
     res.status(500).json({
-      error: "There was an error while saving the post to the database",
-      response: err,
+      message: "There was an error while saving the post to the database"
     });
   }
 });
@@ -43,7 +42,7 @@ router.post("/", async (req, res) => {
 // Creates a comment for the post with the specified id using information sent inside of the request body.
 router.post("/:id/comments", async (req, res) => {
   // Check for missing fields
-  const required = ["text", "post_id"];
+  const required = ["text"];
   const isValidProps = validateProperties(req, res, required);
   if (!isValidProps) {
     return;
@@ -57,14 +56,13 @@ router.post("/:id/comments", async (req, res) => {
   }
 
   // Update the post comment
-  insertComment(req.body)
+  insertComment({...req.body, post_id: req.params.id})
     .then((dbRes) => {
-      res.status(201).json(req.body);
+      res.status(201).json(dbRes);
     })
     .catch((err) => {
       res.status(500).json({
-        error: "There was an error while saving the comment to the database",
-        response: err,
+        message: "There was an error while saving the comment to the database"
       });
     });
 });
@@ -78,7 +76,7 @@ router.get("/", (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({
-        error: "There was an error while saving the post to the database",
+        message: "There was an error while saving the post to the database",
         response: err,
       });
     });
@@ -100,7 +98,7 @@ router.get("/:id", async (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({
-        error: "The post information could not be retrieved.",
+        message: "The post information could not be retrieved.",
         response: err,
       });
     });
@@ -124,7 +122,7 @@ router.get("/:id/comments", async (req, res) => {
       .catch((err) => err);
   } catch (err) {
     res.status(500).json({
-      error: "The comments information could not be retrieved.",
+      message: "The comments information could not be retrieved.",
       response: err,
     });
     return;
@@ -150,7 +148,7 @@ router.delete("/:id", async (req, res) => {
       }  
     } catch(err) {
       res.status(500).json({
-        error: "The post could not be removed.",
+        message: "The post could not be removed.",
         response: err,
       });
     }
@@ -181,7 +179,7 @@ router.put('/:id', async (req, res) => {
       res.status(200).json(editedPost);
     } catch(err) {
       res.status(500).json({
-        error: "The post information could not be modified.",
+        message: "The post information could not be modified.",
         response: err,
       });
     }
